@@ -1,12 +1,14 @@
-import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selectors.*;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Selectors.byName;
+import static com.codeborne.selenide.Selectors.withText;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
 
 public class DeliveryCardTest {
     @Test
@@ -14,17 +16,16 @@ public class DeliveryCardTest {
         GenerateDate generateDate = new GenerateDate();
         open("http://localhost:9999");
         $("[placeholder='Город']").setValue("Санкт-Петербург");
-//        String planningDate = generateDate.generateDate(0);
-//        не получается поставить дату, через дебагер видно что дату высчитывает верную
-//        но никак не хочет ее ставить, если поможете буду признателен
-
-//        $("[placeholder='Дата встречи']").setValue(planningDate);
+        String planningDate = generateDate.generateDate(5);
         $("[placeholder='Дата встречи']").click();
-        $("[data-day='1663880400000']").click();
-        $(byName("name")).val("Васиоий Васильев");
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(planningDate);
+        $(byName("name")).val("Василий Васильев");
         $("[name='phone']").setValue("+79121234223");
         $("[class='checkbox__box']").click();
         $(withText("Забронировать")).click();
-        $(withText("Встреча успешно забронирована")).shouldBe(appear, Duration.ofSeconds(15));
+        $(".notification__content")
+                .shouldHave(Condition.text("Встреча успешно забронирована на " + planningDate), Duration.ofSeconds(15))
+                .shouldBe(Condition.visible);
     }
 }
